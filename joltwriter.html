@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en">
+    <title>Joltwriter</title>
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <style>
+	    @font-face {
+		  font-family: "Twemoji from xem.github.io";
+		  src: url("https://xem.github.io/unicode13/Twemoji.ttf") format("truetype");
+		  unicode-range: U+00A9-E007F;
+		}
+		.twemoji { 
+	  		font-family: "Twemoji from xem.github.io", Segoe UI Emoji, Segoe UI Symbol, Segoe, sans-serif; 
+		}
+		:root {
+		  --body-bg-color: #161616;
+		  --panel-bg-color: #252525;
+		  --joltext-dark-color: #B58E24;
+		  --joltext-medium-color: #CEA229;
+		  --joltext-light-color: #E1B52D;
+
+		  --beantext-dark-color: #B55358;
+		  --beantext-medium-color: #CF5E62;
+		  --beantext-light-color: #DD666C;
+
+		  --title-text-color: #FC3;
+		  --basetext-color: #D7E8E4;
+		  --hitext-color: #E8F2EF;
+		}
+
+    	.basetext { color: #D7E8E4; }
+    	.hitext { color: #E8F2EF; }
+    	.joltext-dark { color: var(--joltext-dark-color); }
+    	.joltext-medium { color: var(--joltext-medium-color); }
+    	.joltext-light { color: var(--joltext-light-color); }
+    	.beantext-dark { color: var(--beantext-dark-color); }
+    	.beantext-medium { color: var(--beantext-medium-color); }
+    	.beantext-light { color: var(--beantext-light-color); }
+        body {
+        	background-color: var(--body-bg-color);
+        	color: var(--basetext-color);
+        }
+        .preserve-height:empty:after {
+		   content: '\200b';
+		}
+        header {
+        	// background-color: #444;
+        	padding-top: 2em;
+        	padding-bottom: 2em;
+        }
+        main .container-lg {
+        	background-color: var(--panel-bg-color);
+        	padding-top: 1em;
+        	padding-bottom: 2.5em;
+        }
+        #title {
+        	font-size: 4em;
+        	color: var(--title-text-color);
+        }
+        #prompt-container {
+        	position: relative;
+        	margin-top: 1.5em;
+        	margin-bottom: 1.5em;
+        	min-height: 17em;
+        }
+        #prompt-row {
+        	font-size: 1.5em;
+        	margin-left: 2em;
+        	margin-right: 2em;
+        	color: #DA3;
+        }
+        #prompt-row blockquote {
+        	padding: 4px;
+        	font-size: 2em;
+        	color: #DEEDEA;
+        	background-color: #1e1e1e;
+        }
+        #prompt-choices .choice {
+        	padding: 8px;
+        	padding-left: 16px;
+        	margin-bottom: 8px;
+        	color: #DEEDEA;
+        	background-color: #1e1e1e;	
+        }
+        #prompt-teaser {
+        	position: absolute;
+        	left: calc(var(--bs-gutter-x) * .5); 
+        	right: calc(var(--bs-gutter-x) * .5); 
+        	top: 0; 
+        	bottom: 0;
+        	background-color: var(--panel-bg-color);
+        }
+        #teaser-contents {
+        	text-align: center;
+        	font-size: 2em;
+        	color: var(--joltext-medium-color);
+        }
+        #history-container {
+        	padding-top: 1em;
+        	padding-bottom: 1em;
+        }
+        #history-box {
+        	font-size: 1.1em;
+        	line-height:  1.3em;
+        	height: 14em;
+        	overflow-y: scroll;
+        	scrollbar-color: var(--joltext-dark-color) #333;
+        }
+        .text-good {
+        	color: #6EE02C;
+        }
+        .text-bad {
+        	color: #DD4C2C;
+        }
+        #type-prompt {
+        	height: 3em;
+        	font-size: 1.5em;
+        	width: 40em;
+        	padding: 12px;
+        	margin: 6px;
+        	background-color: #333;
+        	border: 4px var(--panel-bg-color) solid;
+        	cursor: text;
+        	transform-origin: 50% 50%;
+        }
+        #type-prompt:focus {
+        	outline: 4px var(--joltext-dark-color) solid;
+        }
+
+        #submit-name {
+        	font-size: 1.5em;
+        	width: 10em;
+        	padding: 4px;
+        	margin: 4px;
+        	background-color: #333;
+        	border: 4px var(--panel-bg-color) solid;
+        	color: var(--hitext-color);
+        }
+        #submit-name:focus {
+        	outline: 4px var(--joltext-dark-color) solid;
+        }
+        #submit-button {
+        	font-size: 1.5em;
+        	padding: 4px 10px;
+        	margin: 4px;
+        	background-color: #444;
+        	border: 2px var(--beantext-dark-color) solid;
+        	color: var(--hitext-color);
+        }
+        main { position: relative; }
+        #interruption {
+        	display: block;
+			position: absolute;
+			// width: 100%;
+			// height: 100%;
+			left: 0;
+			top: 0;
+			background-color: #555;
+			// box-shadow: 0 0 30px 5px pink;
+			bottom: 0;
+			right: 0;
+			z-index: 5;
+			padding: 12px;
+        }
+        #interruption-text-row, #interruption-img-row {
+        	z-index: 10;
+        }
+        #interruption-text-row {
+        	margin-bottom: 6px;
+        }
+        #interruption-text {
+        	font-size: 2em;
+        	min-height: 1em;
+        }
+        #interruption-footer {
+        	font-size: 1.5em;
+        }
+        #interruption-footer-text {
+        	min-height: 1em;
+        }
+        #interruption-footer-bar {
+        	height: 30px;
+        	padding: 0;
+        }
+        #interruption-footer-fill-bar {
+        	height: 100%;
+        	position: relative;
+        }
+        #interruption-footer-bar-text {
+        	position: absolute;
+        	left: 50%;
+  			transform: translate(-50%, 0);
+  			z-index: 17;
+        }
+        #interruption-footer-fill-handle {
+        	background-color: white;
+			height: 30px;
+			width: 8px;
+			border-radius: 2px;
+			position: absolute;
+			right: -3px;
+			// top: -3px;
+			z-index: 16;
+		}
+        #interruption .centerer {
+        	position: relative;
+        }
+        #interruption-img {
+        	position: absolute;
+			left: 0;
+			top: 0;
+			z-index: 14;
+        }
+        .overlay-canvas {
+        	display: block;
+			position: absolute;
+			left: 0;
+			top: 0;
+			z-index: 15;
+        }
+        #options-corner, #info-corner, #cc-corner {
+        	background-color: var(--panel-bg-color);
+        	position: absolute;
+        	padding: 4px 12px;
+        	color: #BBB;
+        	z-index: 6;
+        }
+        #options-corner {
+        	right: 0; 
+        	top: 0;
+        }
+        #options-corner:hover {
+        	background-color: #444;
+        	transition: background-color 0.2s;
+        	transition-timing-function: linear;
+        }
+        #options-corner .gear {
+        	font-size: 3em;
+        }
+        #cc-corner {
+        	padding: 4px 8px;
+        	left: 0; 
+        	bottom: 0;
+        }
+        #cc-corner a, #cc-corner a:visited {
+			color: #999;
+        	text-decoration: none;
+        }
+        #info-corner {
+        	right: 0; 
+        	bottom: 0;
+        }
+        #options-corner a, #info-corner a {
+        	color: #CEA229;
+        	text-decoration: none;
+        }
+        #options-corner a:visited, #info-corner a:visited {
+        	color: #CEA229;
+        	text-decoration: none;
+        }
+        #options-modal .modal-content {
+        	background-color: #444;
+        	border: 2px solid var(--panel-bg-color);
+        	color: #DEEDEA;
+        }
+        #options-modal .modal-title {
+        	font-size: 1.5em;
+        }
+        #options-modal .modal-header {
+        	border-bottom:  2px var(--body-bg-color) solid;
+        }
+    </style>
+</head>
+<body>
+	<header class="container-lg text-center" style="">
+        <div class="container" id="title">
+        	Joltwriter!
+        </div>
+    </header>
+
+    <main>
+        <div class="container-lg" id="prompt-container">
+        	<div class="row" id="prompt-row">
+	        	<div class="col">
+	        		<div id="prompt-label" class="joltext-medium"></div>
+	        		<div class="text-center">
+	        			<blockquote id="prompt" class="blockquote preserve-height"></blockquote>
+	        		</div>
+	        		<div id="prompt-choices" class="row justify-content-around" style="display: none">
+	        		</div>
+	        		<div id="prompt-count" class="joltext-medium text-end"><span id="prompt-number" class="joltext-light"></span><span id="prompt-count-text"></span></div>
+	        		<div id="prompt-footer" class="text-center" style="visibility: hidden">
+	        			&nbsp;<span id="prompt-footer" class="joltext-medium"></span>
+	        		</div>
+	        	</div>
+	        </div>
+	        <div id="prompt-teaser" class="row align-items-center justify-content-center" style="opacity: 0; visibility: hidden">
+	        	<div id="teaser-contents" class="col col-10">
+	        		hi~
+	        	</div>
+	        </div>
+	    </div>
+		<div class="container-lg" id="history-container">
+	        <div class="row" id="history-row">
+	        	<div class="col" id="history-box">
+	        	</div>
+	        </div>
+		</div>
+		<div class="container-lg" id="typing-container">
+	        <div class="row" id="typing-row">
+	        	<div class="col col-9 text-left">
+	        		<div id="type-prompt" type="text" class="joltext-light" tabindex="0">
+	        			Start typing to begin~
+	        		</div>
+
+	        		<div id="submit-prompt" type="text" class="joltext-light" style="display: none">
+	        			<p class="text-center">Enter your name to show your result:</p>
+	        			<p class="text-center">
+	        				<input type="text" id="submit-name" tabindex="-1" disabled="disabled">
+	        				<button id="submit-button" tabindex="-1" disabled="disabled">Submit~</button>
+	        			</p>
+	        			<p class="joltext-dark text-center" id="submit-footer">(Only Zenith will see your completion)</p>
+	        		</div>
+	        	</div>
+	        	<div class="col col-3 text-end" id="typing-stats">
+	        		<p><span class="joltext-dark">Total Lines written:</span> <span id="stats-written"></span></p>
+	        		<p><span class="joltext-dark">Currently remaining:</span> <span id="stats-remaining"></span></p>
+	        		<p><span class="joltext-dark">Mistakes:</span> <span id="stats-mistakes">0</span></p>
+	        		<p><span class="joltext-dark">Elapsed time:</span> <span id="stats-elapsed"></span></p>
+	        	</div>
+	        </div>
+        </div>
+    </main>
+
+    <div id="interruption" class="container-lg" style="display: none">
+    	<div class="row row-12 text-center" id="interruption-text-row">
+			<div id="interruption-text"><span class="preserve-height"></span></div>
+			<div id="interruption-footer-text"><span class="preserve-height"></span></div>
+		</div>
+    	<div class="row row-12 justify-content-md-center" id="interruption-img-row">
+			<div id="interruption-footer-bar">
+				<div id="interruption-footer-bar-text"><span class="preserve-height"></span></div>
+				<div id="interruption-footer-fill-bar">
+					<div id="interruption-footer-fill-handle"></div>
+				</div>
+				
+			</div>
+    		<div class="centerer">
+	    		<img id="interruption-img">
+    		</div>
+		</div>
+    </div>
+
+    <div id="options-corner">
+    	<span class="gear twemoji">⚙️</span>
+    </div>
+    <div id="cc-corner" class="twemoji">
+    	<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">(CC BY-NC-SA)</a>
+    </div>
+    <div id="info-corner" class="twemoji">
+    	<span class="twemoji">⚡</span> v1.1 by <a href="https://twitter.com/leafnoodler">@leafnoodler</a>
+    </div>
+
+    <div id="options-modal" class="twemoji modal" tabindex="-1">
+    	<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title joltext-light">Options</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body">
+					<div class="container-fluid">
+						<div class="row joltext-dark" style="padding-bottom: 0.5em">Load Task from local file:</div>
+    					<div class="row" style="padding-bottom: 2em">
+      						<div class="col-md-10">
+      							<input type="file" id="task-source-file" style="width: 100%">
+      						</div>
+      						<div class="col-md-2">
+								<button type="button" id="load-from-file-btn" class="btn btn-secondary">Load!</button>
+      						</div>
+      					</div>
+
+      				</div>
+				</div>
+			</div>
+  		</div>
+  	</div>
+  	<div id="backdrop" class="modal-backdrop" style="display: none"></div>
+
+    <script type="text/javascript">
+var eons = {
+	"jolteon": "jolteon",
+	"perfect": "perfect jolteon",
+	"vaporeon": "vaporeon",
+	"flareon": "flareon",
+	"espeon": "espeon",
+	"umbreon": "umbreon",
+	"sylveon": "sylveon",
+	"leafeon": "leafeon",
+	"glaceon": "glaceon",
+	"rainbow": "eeveelution"
+};
+var eon_list = [
+	"jolteon",
+	"vaporeon",
+	"flareon",
+	"espeon",
+	"umbreon",
+	"sylveon",
+	"leafeon",
+	"glaceon",
+];
+
+var tasks = {
+	"worship": {
+		"notification_suffix": "is devoted to jolteon paws",
+		"steps": [
+			{			
+				"mode": "prompt", "prompt": "i crave your perfect jolteon paws", 
+				"times": 3
+			},{
+				"mode": "prompt", "prompt": "please, let me worship your perfect jolteon paws", 
+				"times": 3
+			},{
+				"mode": "prompt", "prompt": "let me lick every inch of your perfect jolteon paws", 
+				"footer": "(Lick your lips once for every line)",
+				"times": 5
+			},{
+				"mode": "prompt", "prompt": "i belong beneath your perfect jolteon paws", 
+				"times": 4
+			},{
+				"mode": "prompt", "prompt": "knead my face underneath your perfect jolteon paws", 
+				"times": 4
+			},{			
+				"mode": "prompt", "prompt": "scrub me down with your perfect jolteon paws", 
+				"times": 4
+			},{
+				"mode": "prompt", "prompt": "my place is serving your perfect jolteon paws", 
+				"times": 8
+			},{
+				"mode": "prompt", "prompt": "i am a jolteon pawslut", 
+				"footer": "(say each word aloud as you type)",
+				"times": 5
+			},{
+				"mode": "finish", 
+				"header": "Task completed.",
+				"prompt": "You are properly devoted to jolteon paws!", 
+				"promptstyle": "color: #F29DA4;",
+				"footer": "Congratulations, pawslut~"
+			}
+		]
+	},
+	"daily": {
+		"notification_suffix": "worships {{jolteon}} paws",
+		"vars": {
+			"a": "a",
+			"eons": {...eons},
+			"eon_list": [...eon_list],
+			"worships": [
+				"i live to serve {{jolteon}} paws",
+				"my thoughts are filled with {{jolteon}} paws",
+				"my purpose is to service {{jolteon}} paws",
+
+				"i need to suck on {{jolteon}} paws",
+				"i crave the taste of {{jolteon}} paws",
+				"i need to slurp and clean {{jolteon}} paws",
+
+				"my tongue is for cleaning {{jolteon}} paws",
+				"my lips are for sucking on {{jolteon}} paws",
+				"my muzzle is for polishing {{jolteon}} paws",
+
+				"make me smell like {{jolteon}} paws",
+				"scrub me down under {{jolteon}} paws",
+				"knead my face under {{jolteon}} paws",
+				"pin me down with {{jolteon}} paws",
+
+				"my place is below {{jolteon}} paws",
+				"i belong beneath {{jolteon}} paws",
+				"i am so weak for {{jolteon}} paws",
+			]
+		},
+		"steps": [
+			{	
+				"setup": [
+					{
+						"op": "set_from_map", 
+						"source_var": "eons", 
+						"query_key": "eon", 
+						"default": "jolteon",
+						"dest_var": "jolteon"
+					}
+				],
+				"mode": "prompt", "prompt": "i worship {{jolteon}} paws", 
+				"times": 5
+			},{
+				"setup": [
+					{"op": "pop_list_random", "source_var": "worships", "dest_attr": "prompt"},
+					{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "cycle_list_random", "source_var": "eon_list", "dest_var": "jolteon"
+					}
+				],
+				"after_line": [
+					{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "cycle_list_random", "source_var": "eon_list", "dest_var": "jolteon"
+					}
+				],
+				"mode": "prompt", "prompt": "", 
+				"times": 3,
+				"repeat_step_times": 5,
+			},{
+				"setup": [
+					{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "cycle_list_random", "source_var": "eon_list", "dest_var": "jolteon", "reinitialize": true
+					},{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "set_step_attr", "dest_attr": "times", "value": 9
+					},{
+						"op": "set_value", "dest_var": "a", "value": "a"
+					},{
+						"if": {"var": "jolteon", "op": "in", "value": ["espeon", "umbreon"]}, 
+						"op": "set_value", "dest_var": "a", "value": "an"
+					},
+				],
+				"after_line": [
+					{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "cycle_list_random", "source_var": "eon_list", "dest_var": "jolteon"
+					},{
+						"op": "set_value", "dest_var": "a", "value": "a"
+					},{
+						"if": {"var": "jolteon", "op": "in", "value": ["espeon", "umbreon"]}, 
+						"op": "set_value", "dest_var": "a", "value": "an"
+					},
+				],
+				"mode": "prompt", "prompt": "i am {{a}} {{jolteon}} pawslut", 
+				"footer": "(say each word aloud as you type)",
+				"times": 5
+			},{
+				"setup": [
+					{
+						"if": {"url_param": "eon", "op": "==", "value": "rainbow"}, 
+						"op": "set_from_map", 
+						"source_var": "eons", 
+						"query_key": "eon", 
+						"default": "jolteon",
+						"dest_var": "jolteon"
+					}
+				],
+				"mode": "finish", 
+				"header": "Task completed.",
+				"prompt": "You have completed your daily worship of {{jolteon}} paws!", 
+				"promptstyle": "color: #F29DA4;",
+				"footer": "Come back tomorrow, pawslut~"
+			}
+		]
+	}
+};
+</script>
+<script type="text/javascript" src="extra-tasks.js"></script>
+<script type="text/javascript">
+var params = window.location.search;
+if(!params && window.location.hash) {
+	params = window.location.hash.replace('#', '?');
+}
+var url_params = new URLSearchParams(params);
+
+// i don't get why d3 took this out, it used to have it
+function stylesFunction(selection, map, priority) {
+  return selection.each(function() {
+    var x = map.apply(this, arguments), s = select(this);
+    for (var name in x) s.style(name, x[name], priority);
+  });
+}
+
+function stylesObject(selection, map, priority) {
+  for (var name in map) selection.style(name, map[name], priority);
+  return selection;
+}
+
+function stylesEither(map, priority) {
+  return (typeof map === "function" ? stylesFunction : stylesObject)(this, map, priority == null ? "" : priority);
+}
+d3.selection.prototype.styles = stylesEither;
+d3.transition.prototype.styles = stylesEither;
+
+
+
+function initialize_state() {
+	return {
+		"state": "loading",
+		"run": {
+			"start": null,
+			"timer": null,
+			"written": 0,
+			"mistakes": 0,
+			"history": []
+		},
+		"step": {},
+		"line": {}
+	};
+}
+var task;
+var current = initialize_state();
+
+
+function pop_random_choice(target_list) {
+	return target_list.splice(Math.floor(Math.random() * target_list.length), 1)[0];
+}
+
+
+const IDK ="<???>";
+const step_types = ["prompt", "choice", "interruption", "finish"];
+var op_verbose = true;
+
+
+function op_get_var(var_name, dflt) {
+	var value = task.vars;
+	// var names can lookup inside objects like foo.bar.0
+	var parts = var_name.split(".");
+	for(var part of parts) {
+		if(value && typeof(value) == "object" && part in value) {
+			value = value[part];
+		}
+		else {
+			// debugger;
+			console.log("> op get_var: empty target var", var_name, (part != var_name ? part : ""), "=>", dflt);
+			value = dflt;
+			break;
+		}
+	}
+
+	if(op_verbose) {
+		console.log("> op get_var: var", var_name, "=>", value);
+	}
+	return value;
+}
+
+
+function op_set_destination(step, cmd, newvalue) {
+	if(cmd.dest_attr) {
+		if(op_verbose) {
+			console.log("> op set dest_attr", cmd.dest_attr, "=>", newvalue);
+		}
+		step[cmd.dest_attr] = newvalue;
+	}
+	if(cmd.dest_var) {
+		if(op_verbose) {
+			console.log("> op_set dest_var", cmd.dest_var, "=>", newvalue);
+		}
+		task.vars[cmd.dest_var] = newvalue;
+	}
+}
+
+
+function apply_vars(step, fieldnames, to) {
+	for(var f of fieldnames) {
+		if(step[f + '_var']) {
+			var fv = op_get_var(step[f + '_var']);
+			to[f] = fv;
+		}
+	}
+}
+
+const if_ops = ["==", "!=", "in", "<", "<=", ">", ">="];
+function execute_ops(step, ops_name) {
+	var step_ops = step[ops_name];
+	var did_anything = false;
+	if(step_ops) {
+		for(var cmd of step_ops) {
+			if(op_verbose) {
+				console.log("> cmd", cmd);
+			}
+			var newvalue = null;
+
+			if(cmd['if']) {
+				var cif = cmd['if'];
+				var lvalue = null;
+				if(cif.var) {
+					lvalue = op_get_var(cif.var, null);
+				}
+				else if(cif.url_param) {
+					lvalue = url_params.get(cif.url_param);
+				}
+				else {
+					console.warn("unknown op-if left-value:", cif);
+				}
+				var rvalue = null;
+				if(typeof cif.value != "undefined") {
+					rvalue = cif.value;
+				}
+				else if(cif.var2) {
+					rvalue = op_get_var(cif.var2, null);
+				}
+				else {
+					console.warn("unknown op-if right-value:", cif);
+				}
+				if(if_ops.indexOf(cif.op) < 0) {
+					console.warn("unknown op-if op:", cif)
+				}
+				if(cif.op == "==" && !(lvalue == cif.value)) {
+					continue;
+				}
+				if(cif.op == "!=" && !(lvalue != cif.value)) {
+					continue;
+				}
+				if(cif.op == "in" && !(cif.value.indexOf(lvalue) > -1)) {
+					continue;
+				}
+				if((cif.op == "<" && !(lvalue < cif.value)) || (cif.op == "<=" && !(lvalue <= cif.value))) {
+					continue;
+				}
+				if((cif.op == ">" && !(lvalue > cif.value)) || (cif.op == ">=" && !(lvalue >= cif.value))) {
+					continue;
+				}
+			}
+			did_anything = true;
+
+			if(cmd.op == "pop_list_random") {
+				var target_var = op_get_var(cmd.source_var, null);
+				if(!target_var || !target_var.length) {
+					console.log("pop_list_random empty target var", cmd);
+					newvalue = IDK;
+				}
+				else {
+					newvalue = pop_random_choice(target_var);
+				}
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "pop_list_first") {
+				var target_var = op_get_var(cmd.source_var, null);
+				if(!target_var || !target_var.length) {
+					console.log("pop_list_first empty target var", cmd);
+					newvalue = IDK;
+				}
+				else {
+					newvalue = target_var.splice(0)[0];
+				}
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "pop_list_last") {
+				var target_var = op_get_var(cmd.source_var, null);
+				if(!target_var || !target_var.length) {
+					console.log("pop_list_last empty target var", cmd);
+					newvalue = IDK;
+				}
+				else {
+					newvalue = target_var.splice(target_var.length - 1)[0];
+				}
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "cycle_list_random") {
+				var cycle_list = task.vars["$cycle:" + cmd.source_var];
+				if(!cycle_list || !cycle_list.length || cmd.reinitialize) {
+					var source_list = op_get_var(cmd.source_var, null);
+					if(!source_list || !source_list.length) {
+						console.log("cycle_list_random empty source var", cmd);
+						source_list = ["<???>"];
+					}
+					else {
+						cycle_list = [...source_list];
+						task.vars["$cycle:" + cmd.source_var] = cycle_list;
+					}
+				}
+				newvalue = pop_random_choice(cycle_list);
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "set_from_map") {
+				var source_map = op_get_var(cmd.source_var, null);
+				if(!source_map) {
+					console.log("empty target var", cmd);
+					newvalue = IDK;
+				}
+				else {
+					var queryval = null;
+					if(cmd.query_key) {
+						queryval = url_params.get(cmd.query_key);
+					}
+					else if(cmd.key_var) {
+						queryval = op_get_var(cmd.key_var, null);
+					}
+					if(!queryval || !source_map[queryval]) {
+						queryval = cmd.default;
+					}
+					newvalue = source_map[queryval];
+					
+				}
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "populate_step_from_var") {
+				newvalue = op_get_var(cmd.source_var, null);
+				if(typeof newvalue != "object") {
+					console.log("populate_step_from_var: source var is not object", cmd.source_var, newvalue);
+				}
+				for (const [key, value] of Object.entries(newvalue)) {
+					if(cmd.override || !(key in step)) {
+						step[key] = value;
+					}
+				}
+			}
+			else if(cmd.op == "set_from_var") {
+				newvalue = op_get_var(cmd.source_var, (typeof cmd.default_value != undefined ? cmd.default_value : IDK));
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "set_value") {
+				newvalue = cmd.value;
+				op_set_destination(step, cmd, newvalue);
+			}
+			else if(cmd.op == "add" || cmd.op == "subtract") {
+				if(cmd.value) {
+					newvalue = cmd.value;
+				}
+				else if(cmd.random_value) {
+					if(Array.isArray(cmd.random_value)) {
+						newvalue = pop_random_choice([...cmd.random_value]);
+					}
+					else if(typeof cmd.random_value == "object" && "from" in cmd.random_value && "to" in cmd.random_value) {
+						newvalue = (cmd.random_value["from"] + Math.floor(Math.random() * (cmd.random_value["to"] - cmd.random_value["from"])));
+					}
+					else {
+						console.log("unexpected random_value", cmd);
+						newvalue = 0;
+					}
+				}
+				else {
+					console.log("no value to add/subtract");
+				}
+				// todo: supporting dot notations here is a hassle
+				var base = op_get_var(cmd.target_var, 0);
+				if(cmd.op == "add") {
+					base = base + newvalue;
+				}
+				else {
+					base = base - newvalue;
+				}
+				task.vars[cmd.target_var] = base;
+			}
+			else {
+				console.log("unknown cmd", cmd);
+			}
+		}
+	}
+	return did_anything;
+}
+
+function build_rich_text_tree(prompt) {
+	// why did i decide to write my own textparser from scratch today?
+	var ci = 0;
+	function scan(depth, tag_name) {
+		var current = {
+			"left": "", 
+			"tag": tag_name,
+			"children": [], 
+			"params": null,
+			"right": ""
+		};
+
+		while(ci < prompt.length) {
+			// note: there's no escaping mechanism here, don't get so wild that you want to use [] in prompts
+			var cn = prompt.indexOf('[', ci);
+			//console.log(">".repeat(depth + 1), "ci", ci, "cn", cn);
+			if(cn > -1) {
+				if(cn > ci) {
+					var gap_text = prompt.slice(ci, cn);
+					if(!current.children.length) {
+						current.left = gap_text
+						//console.log(">".repeat(depth + 1), "left", gap_text);
+					}
+					else {
+						//console.log(">".repeat(depth + 1), "append right", gap_text);
+						current.children[current.children.length - 1].right += gap_text;
+					}
+				}
+				// note: there's no escaping mechanism here, the next ] is it
+				var ce = prompt.indexOf(']', cn);
+				if(ce < 0) {
+					console.warn("scan: unmatched [ at", cn);
+					ci = prompt.length;
+					return current;
+				}
+				var tag = prompt.slice(cn + 1, ce);
+				ci = ce + 1;
+				//console.log(">".repeat(depth + 1), "scan: tag", tag, "p", (parent && parent.tag));
+				if(tag[0] == "/") {
+					if(tag_name && tag_name == tag.slice(1)) {
+						//console.log(">".repeat(depth + 1), "scan: end tag", tag);
+						return current;
+					}
+					console.warn("scan: unmatched end tag at", cn, "expected", tag_name, "got", tag.slice(1));
+					ci = prompt.length;
+					return current;
+				}
+				else {
+					// once wasn't enough fun
+					var child_tag_name = tag;
+					var child_tag_paramlist = "";
+					var first_space_idx = tag.indexOf(" ");
+					if(first_space_idx > -1) {
+						child_tag_name = tag.slice(0, first_space_idx);
+						child_tag_paramlist = tag.slice(first_space_idx);
+					}
+
+					var child = scan(depth + 1, child_tag_name);
+					if(child_tag_paramlist) {
+						var child_tag_params = [];
+						for(var param_match of [...child_tag_paramlist.matchAll(/\s*(\w+)=('[^']*'|"[^"]*")/g)]) {
+							//console.log(">".repeat(depth + 2), " match param", param_match);
+							var [_, k, v] = param_match;
+							child_tag_params.push([k, v.slice(1, v.length -1)]);
+						}
+						//console.log(">".repeat(depth + 2), "params", child_tag_params);
+						child.params = child_tag_params;
+					}
+					current.children.push(child);
+				}
+			}
+			else {
+				current.right = prompt.slice(ci, prompt.length);
+				//console.log(">".repeat(depth + 1), "right", current.left);
+				ci = prompt.length;
+			}
+
+		}
+		//console.log(">".repeat(depth + 1), "node: ", current.left, current.children.length, current.right);
+		return current;
+	}
+	var prompt_root = scan(0, "root");
+
+	var plain_text = "";
+	function walk(current) {
+		plain_text += current.left;
+		for(var child of current.children) {
+			walk(child);
+		}
+		plain_text += current.right;
+	}
+	walk(prompt_root);
+	console.log("plain_text:", plain_text);
+
+	return {
+		"text": plain_text,
+		"tree": prompt_root
+	};
+}
+
+
+function parse_rich_text(raw_text) {
+	// hey, wanna see the stupidest command escaping in the world?
+	raw_text = raw_text.replaceAll('\\{', '#LEFT_CURL#').replaceAll('\\}', '#RIGHT_CURL#')
+			.replaceAll('\\[', '#LEFT_SQUARE#').replaceAll('\\]', '#RIGHT_SQUARE#');
+
+	var populated_text = raw_text.replace(
+		/(\{\{[\w\.]+\})\}/g, 
+		(match, contents) => { 
+			var key = match.replace('{{', '').replace('}}', '');
+			var val = op_get_var(key);
+			if(!val && val !== "") {
+				console.warn('failed to substitute', match, contents, key, val); 
+				return '<???>';
+			}
+			return val; 
+		}
+	);
+
+	return {
+		"populated_text": populated_text,
+		...build_rich_text_tree(populated_text),
+	};
+}
+
+var valid_tag_names = ['span', 'div', 'img', 'p', 'br'];
+var valid_attr_names = ['style', 'class', 'id', 'src'];
+function render_rich_text(element, prompt_root, individual=false) {
+	function deescape(text) {
+		return text.replaceAll('#LEFT_CURL#', '{').replaceAll('#RIGHT_CURL#', '}')
+			.replaceAll('#LEFT_SQUARE#', '[').replaceAll('#RIGHT_SQUARE#', ']');
+	}
+	var char_idx = 0;
+	element.selectChildren().remove();
+	if(!prompt_root.tree.children.length && !individual) {
+		element.text(deescape(prompt_root.text));
+	}
+	else {
+		element.text("");
+		function walk(current, node) {
+			if(current.left) {
+				if(individual) {
+					for(var c of deescape(current.left)) {
+						var chspan = document.createElement("span");
+						chspan.appendChild(document.createTextNode(c));
+						chspan.className = "rt-ch rt-ch-" + char_idx;
+						char_idx++;
+						node.appendChild(chspan);
+					}
+				}
+				else {
+					node.appendChild(document.createTextNode(deescape(current.left)));
+				}
+			}
+			for(var child of current.children) {
+				if(valid_tag_names.indexOf(child.tag.toLowerCase()) < 0) {
+					console.warn("render_rich_text: unsupported tag name:", child.tag);
+					child.tag = "div";
+				}
+				var child_node = document.createElement(child.tag);
+				walk(child, child_node);
+				if(child.params) {
+					for(var [k, v] of child.params) {
+						if(valid_attr_names.indexOf(k.toLowerCase()) < 0) {
+							console.warn("render_rich_text: unsupported tag attr:", child.tag);
+							continue;
+						}
+						child_node.setAttribute(k, v);
+					}
+				}
+				node.appendChild(child_node);
+			}
+			if(current.right) {
+				if(individual) {
+					for(var c of deescape(current.right)) {
+						var chspan = document.createElement("span");
+						chspan.appendChild(document.createTextNode(c));
+						chspan.className = "rt-ch rt-ch-" + char_idx;
+						char_idx++;
+						node.appendChild(chspan);
+					}
+				}
+				else {
+					node.appendChild(document.createTextNode(deescape(current.right)));
+				}
+			}
+		}
+		walk(prompt_root.tree, element.node());
+	}
+	return char_idx;
+}
+
+
+function initialize_task(base_task) {
+	task = {...base_task};
+	var new_steps = [];
+	for(var step of task.steps) {
+		var new_step = {...step};
+		if(!new_step.mode) {
+			new_step.mode = "prompt";
+		}
+		if(step_types.indexOf(new_step.mode) < 0) {
+			console.warn("unknown step mode:", new_step);
+		}
+
+		// clone it so the base stays clean
+		new_steps.push(new_step);
+		if(step.repeat_step_times) {
+			for(var i = 0; i < step.repeat_step_times - 1; i++) {
+				new_steps.push({...step});
+			}
+		}
+	}
+	task.steps = new_steps;
+	set_state("idle");
+
+	load_step(0);
+	update_history();
+}
+
+
+function hide_prompt_elements() {
+	d3.select("#prompt").style("display", "none");
+	d3.select("#prompt-count").style("display", "none");
+}
+function show_prompt_elements() {
+	d3.select("#prompt").style("display", null);
+	d3.select("#prompt-count").style("display", null);
+}
+function hide_choice_elements() {
+	d3.select("#prompt-choices").style("display", "none");
+}
+function show_choice_elements() {
+	d3.select("#prompt-choices").style("display", null);
+}
+function hide_interruption_elements() {
+	d3.select("#interruption").style("display", "none");
+}
+function show_interruption_elements() {
+	d3.select("#interruption").style("display", "block");
+}
+function hide_teaser_elements(last_step) {
+	if(last_step && last_step.fadeout_ms) {
+		d3.select("#prompt-teaser").transition()
+			.duration(last_step.fadeout_ms)
+			.ease(d3.easeLinear)
+			.style("opacity", 0)
+			.on("end", () => {
+				d3.select("#prompt-teaser").style("visibility", "hidden");
+			});
+	}
+	else {
+		d3.select("#prompt-teaser").style("visibility", "hidden");
+	}
+}
+function show_teaser_elements() {
+	d3.select("#prompt-teaser").style("visibility", "visible");
+}
+
+
+function load_step(step_index) {
+	var step = task.steps[step_index];
+	var last_state = current.state;
+	var last_step = current.step;
+	// execute
+	execute_ops(step, "setup");
+	step.display_prompt = parse_rich_text(step.prompt || "");
+
+	// assign
+	current.step = step = {
+		"index": step_index,
+		"written": 0,
+		"times": 0,
+		...step,
+	};
+	reset_line();
+	update_stats();
+
+	// update ui
+	if(step.mode == "finish") {
+		finish(step);
+	}
+	else {
+		// cleanup old rendering first
+		set_state_step(step);
+		if(last_state == "choice" && step.mode != "choice") {
+			console.log("exit choice mode");
+			hide_choice_elements();
+		}
+		if(last_state == "interruption" && step.mode != "interruption") {
+			console.log("exit interruption mode");
+			hide_interruption_elements();
+		}
+		if(last_state == "teaser" && step.mode != "teaser") {
+			console.log("exit teaser mode");
+			hide_teaser_elements(last_step);
+		}
+		if((last_state == "idle" || last_state == "prompt") && (["choice", "interruption", "teaser"].indexOf(step.mode) < 0)) {
+			console.log("exit prompt mode");
+			hide_prompt_elements();
+		}
+
+		// set up new rendering
+		if(step.mode == "choice" ) {
+			// choice
+			if(last_state != "choice") {
+				console.log("enter choice mode");
+				hide_prompt_elements();
+				show_choice_elements();
+			}
+
+			step.display_header = parse_rich_text(step.header || "Choose:");
+			step.display_footer = parse_rich_text(step.footer || "");
+			
+			render_rich_text(d3.select("#prompt-label"), step.display_header);
+			if(step.footer) {
+				render_rich_text(d3.select("#prompt-footer"), step.display_footer);
+				d3.select("#prompt-footer").style("visibility", "visible");
+			}
+			else {
+				d3.select("#prompt-footer").style("visibility", "hidden");
+			}
+
+			for(var choice of step.choices) {
+				choice.display_prompt = parse_rich_text(choice.prompt || "");
+			}
+			d3.select("#prompt-choices")
+				.selectAll("div")
+				.data(step.choices)
+				.join((enter) => {
+					var el = enter.append("div");
+					el
+						.style("opacity", 0.25)
+						.classed("choice", true)
+						.classed("col-5", true)
+						.classed("preserve-height", true)
+						.transition()
+							.duration(200)
+							.style("opacity", 1.0);
+					el.each(function (d, i) {
+						var el = d3.select(this);
+						render_rich_text(el, d.display_prompt);
+					});
+				},
+				(update) => update,
+				(exit) => {
+					exit.remove();
+				}
+			);
+		}
+		else if(step.mode == "interruption") {
+			// interruption
+			if(last_state != "interruption") {
+				console.log("enter interruption mode");
+				show_interruption_elements();
+			}
+			var interruption_info = {
+				_finished: false,
+				src: step.image,
+				target: step.target || {},
+				effect: step.effect,
+				ymargin: step.ymargin,
+				show_progress: step.show_progress,
+				timer_ms: step.timer_ms,
+				fadein_ms: step.fadein_ms,
+				effect_fadein_ms: step.effect_fadein_ms,
+				bar_fadein_ms: step.bar_fadein_ms,
+				auto_close: step.auto_close,
+				highlight_options: step.highlight_options || {}
+			};
+			apply_vars(
+				step,
+				[
+					"image", "effect", "ymargin", 
+					"show_progress", 
+					"timer_ms", "fadein_ms", "effect_fadein_ms", "bar_fadein_ms",
+					"auto_close", "close_prompt"
+				],
+				interruption_info
+			);
+			apply_vars(
+				step,
+				["xpos", "ypos", "radius"], 
+				interruption_info.target
+			);
+			apply_vars(
+				step,
+				["n_stops", "ease_exponent", "alpha_floor", "alpha_range", "lum_floor", "lum_range", "lum_speed"], 
+				interruption_info.highlight_options
+			);
+			if(interruption_info.auto_close === undefined) {
+				interruption_info.auto_close = !(interruption_info.timer_ms);
+			}
+			console.log("interruption:", interruption_info);
+			
+			step.display_header = parse_rich_text(step.header || "");
+			step.display_caption = parse_rich_text(step.caption || "");
+			step.display_bartext = parse_rich_text(step.bartext || "");
+			step.display_close_header = parse_rich_text(step.close_header || "");
+			step.display_close_caption = parse_rich_text(step.close_caption || "");
+			step.display_close_bartext = parse_rich_text(step.close_bartext || "Press [span style='color: white'](SPACE)[/span] to continue");
+			render_rich_text(d3.select("#interruption-text span"), step.display_header);
+			render_rich_text(d3.select("#interruption-footer-text span"), step.display_caption);
+			render_rich_text(d3.select("#interruption-footer-bar-text span"), step.display_bartext);
+
+			interruption_info.on_finish = function() {
+				console.log("interruption on_finish", step, interruption_info._finished);
+				if(interruption_info._finished) {
+					return;
+				}
+				interruption_info._finished = true;
+				if(interruption_info._progress_timer) {
+					interruption_info._progress_timer.stop();
+				}
+
+				if(interruption_info.auto_close) {
+					execute_ops(step, "completed");
+					var next_step_index = lookup_next_step_index(step);
+					load_step(next_step_index);
+				}
+				else {
+					if(interruption_info.show_progress) {
+						var footerbar = d3.select("#interruption-footer-bar");
+						d3.select("#interruption-footer-fill-handle").style("display", "none");
+						d3.select("#interruption-footer-fill-bar")
+							.style("background-color", "#FFF")
+							.transition()
+								.duration(250)
+								.style("background-color", "#555");
+					}
+					render_rich_text(d3.select("#interruption-text span"), step.display_close_header);
+					render_rich_text(d3.select("#interruption-footer-text span"), step.display_close_caption);
+					render_rich_text(d3.select("#interruption-footer-bar-text span"), step.display_close_bartext);
+					if(current.state == "interruption") {
+						set_state("interruption_ready");
+					}
+				}
+			}
+			display_interruption_image(interruption_info);
+			step['$_interruption_info'] = interruption_info;
+		}
+		else if(step.mode == "teaser") {
+			step.display_text = parse_rich_text(step.text || "");
+			render_rich_text(d3.select("#teaser-contents"), step.display_text, true);
+			var all_chars = d3.selectAll("#teaser-contents .rt-ch").style("opacity", 0).nodes();
+			var fadein_ms = step.fadein_ms;
+			var char_delay = step.char_delay || 50;
+			var chars_shown = 0;
+			show_teaser_elements();
+			d3.select("#prompt-teaser")
+				.style("opacity", 0)
+				.transition()
+					.duration(fadein_ms)
+					.style("opacity", 1);
+
+			var t = d3.timer((elapsed) => {
+				//console.log(elapsed);
+				while((elapsed / char_delay) > chars_shown) {
+					d3.select(all_chars[chars_shown]).style("opacity", 0.5);
+					if(chars_shown > 0) {
+						d3.select(all_chars[chars_shown - 1]).style("opacity", 1);
+					}
+					chars_shown++;
+					if(chars_shown >= all_chars.length) {
+						d3.select(all_chars[chars_shown - 1]).style("opacity", 1);
+						console.log("teaser timer complete", elapsed, chars_shown, 'pause:', step.pause_ms || 1);
+						t.stop();
+
+						if(step.auto_close !== false) {
+							d3.timeout(() => {
+								execute_ops(step, "completed");
+								var next_step_index = lookup_next_step_index(step);
+								load_step(next_step_index);
+							}, step.pause_ms || 1);
+						}
+						else {
+
+						}
+					}
+				}
+			}, fadein_ms);
+		}
+		else {
+			// normal prompt
+			show_prompt_elements();
+
+			step.display_header = parse_rich_text(step.header || "You will type the line:");
+			render_rich_text(d3.select("#prompt-label"), step.display_header);
+
+			step.display_footer = parse_rich_text(step.footer || "");
+			if(step.footer) {
+				render_rich_text(d3.select("#prompt-footer"), step.display_footer);
+				d3.select("#prompt-footer").style("visibility", "visible");
+			}
+			else {
+				d3.select("#prompt-footer").style("visibility", "hidden");
+			}
+			render_rich_text(d3.select("#prompt"), step.display_prompt);
+			if(step_index > 0) {
+				set_state("step_transition");
+				d3.select("#type-prompt").style("opacity", 0.33);
+				d3.select("#prompt")
+					.style("color", "#FFC526")
+					.transition()
+						.duration(500)
+						.style("color", "#DEEDEA")
+						.on("end", () => {
+							set_state_step(current.step);
+							d3.select("#type-prompt").style("opacity", "");
+							d3.select("#prompt").style("color", "");
+						});
+				if(step.footer) {
+					d3.select("#prompt-footer")
+						.style("font-size", "1.2em")
+						.transition()
+							.duration(600)
+							.ease(d3.easeElasticOut.amplitude(1.2).period(0.5))
+							.style("font-size", "1em")
+							.on("end", () => {
+								d3.select("#prompt-footer").style("font-size", "");
+							});
+				}
+			}
+		}
+	}
+}
+
+function finish(step) {
+	set_state("finished");
+	if(current.run.timer) {
+		clearInterval(current.run.timer);
+		current.run.timer = null;
+	}
+	d3.select("#prompt-choices").style("display", "none");
+	d3.select("#interruption").style("display", "none");
+	d3.select("#prompt").style("display", null);
+	d3.select("#prompt-count").style("display", null);
+
+	d3.select("#prompt-label").text(step.header);
+	render_rich_text(d3.select("#prompt"), step.display_prompt);
+	d3.select("#prompt-number").style("display", "none");
+	d3.select("#prompt-footer").style("visibility", "hidden");
+	d3.select("#prompt-count-text").text(step.footer);
+	
+
+	if(step.promptstyle) {
+		d3.select("#prompt").attr("style", step.promptstyle);
+	}
+	d3.select("#type-prompt")
+		.style("opacity", 1.0)
+		.transition()
+			.duration((url_params.get('under') ? 400 : 2000))
+			.style("opacity", 0)
+			.on("end", () => {
+				if(url_params.get('under')) {
+					enable_submit_button();
+				}
+			});
+}
+
+function update_stats() {
+	render_rich_text(d3.select("#prompt"), current.step.display_prompt);
+	d3.select("#prompt-number").text(current.step.times + " time" + (current.step.times > 1 ? "s": "") + " correctly.");
+	d3.select("#stats-remaining").text(current.step.times - current.step.written);
+	d3.select("#stats-written").text(current.run.written);
+	d3.select("#stats-mistakes").text(current.run.mistakes);
+	if(current.run.start) {
+		var elapsed_secs = (Date.now() - current.run.start) / 1000;
+		var mins = (elapsed_secs / 60) | 0;
+		var secs = (elapsed_secs % 60) | 0;
+		d3.select("#stats-elapsed").text(mins + ":" + (secs < 10 ? "0": "") + secs);
+	}
+}
+
+function update_history() {
+	var container = d3.select("#history-box").selectAll("div");
+	container
+		.data(current.run.history, d => d.id)
+		.join((enter) => {
+			var el = enter.append("div");
+			el
+				.attr("id", d => ("history-item-" + d.id))
+				.style("opacity", 0.25)
+				.transition()
+					.duration(200)
+					.style("opacity", 1.0);
+			el.each(function (d, i) {
+				var el = d3.select(this);
+				for(var ch of d.chars) {
+					el.append("span")
+						.attr("class", "text-" + ch.status)
+						.text(ch.k);
+				}
+			});
+		},
+		(update) => update,
+		(exit) => {
+			exit.remove();
+		});
+	var historybox = document.getElementById("history-box")
+	historybox.scrollTo(0, historybox.scrollHeight);
+}
+
+function reset_line() {
+	current.line = {
+		"text": "",
+		"chars": [],
+		"status": "good"
+	};
+}
+
+function set_state(new_state) {
+	console.log("state =>", new_state);
+	current.state = new_state;
+}
+
+function set_state_step(step) {
+	var new_state ="running";
+	if(step.mode == "choice") new_state = "choice";
+	if(step.mode == "teaser") new_state = "teaser";
+	if(step.mode == "interruption") new_state = "interruption";
+	set_state(new_state);
+}
+
+
+function lookup_next_step_index(current_step) {
+	var next_step_index = null;
+	if(current_step.next_step_id) {
+		for(var idx = 0; idx < task.steps.length; idx++) {
+			if(task.steps[idx].step_id == current_step.next_step_id) {
+				console.log("found next step, id", current_step.next_step_id, "idx", idx);
+				next_step_index = idx;
+				break;
+			}
+		}
+		if(next_step_index === null) {
+			console.log("could not find next step, id", current_step.next_step_id);
+			next_step_index = current_step.index + 1;
+		}
+	}
+	else {
+		next_step_index = current_step.index + 1;
+	}
+	console.log("next_step_index =>", next_step_index);
+	return next_step_index;
+}
+
+
+function record_line(line, matched_choice) {
+	console.log("record:", line);
+	current.run.history.push({
+		...line,
+		"id": "h" + current.run.history.length,
+	})
+	if(line.status == "bad") {
+		current.run.mistakes += 1;
+	}
+	if(line.status == "good") {
+		current.step.written += 1;
+		current.run.written += 1;
+	}
+	update_history();
+	var step_complete = false;
+	if(current.step.mode == "choice") {
+		if(line.status == "good" && matched_choice) {
+			execute_ops(matched_choice, "after_selected");
+			current.step.next_step_id = matched_choice.next_step_id;
+			step_complete = true;
+		}
+	}
+	else if(current.step.written >= current.step.times) {
+		step_complete = true;
+	}
+	if(step_complete) {
+		execute_ops(current.step, "after_last_line");
+		var next_step_index = lookup_next_step_index(current.step);
+		load_step(next_step_index);
+	}
+	else {
+		if(current.step.mode != "choice" && line.status == "good" && execute_ops(current.step, "after_line")) {
+			current.step.display_prompt = parse_rich_text(current.step.prompt);
+		}
+		update_stats();
+	}
+}
+
+function start_timer() {
+	current.run.start = Date.now();
+	current.run.timer = setInterval(update_stats, 1000);
+	update_stats();
+}
+
+function typer_keydown(event) {
+	if(event.key == "?" && current.run.written < 2) {
+		console.log("count cheaty")
+		current.step.times = 1;
+		for(var step of task.steps) {
+			if(step.times) { step.times = 1; }
+		}
+		d3.select("#prompt").style("border", "3px #262 solid");
+		update_stats();
+	}
+	if(event.key == "*" && current.run.written < 2) {
+		console.log("all cheaty")
+		current.run.is_cheaty = true;
+		d3.select("#prompt").style("border", "3px #3B3 solid");
+		update_stats();
+	}
+	if(current.state == "running" || current.state == "choice") {
+		//console.log("keydown", event);
+		var k = event.key;
+		var line = current.line;
+		if(k == "Enter") {
+			if(line.text) {
+				line.status = "bad";
+				record_line(line);
+			}
+			reset_line();
+		}
+		else if(k == "Tab") {
+
+		}
+		else if(k.length != 1) {
+			console.log("skip modifier key");
+		}
+		else {
+			var status = "bad"; 
+			var is_complete = false;
+			var finish_choice = null;
+			if(current.state == "running") {
+				status = (current.step.display_prompt.text[line.text.length] == k ? "good": "bad");
+				line.text += k;
+				if(current.run.is_cheaty) { 
+					status = "good"; 
+				}
+				line.chars.push({k: k, status: status});
+
+				is_complete = (line.text.length == current.step.display_prompt.text.length);
+				if(current.run.is_cheaty) { 
+					is_complete = true;
+				}
+			}
+			else {
+				for(var choice of current.step.choices) {
+					if((choice.display_prompt.text.startsWith(line.text) && choice.display_prompt.text[line.text.length] == k) || (choice.shortcut && choice.shortcut == (line.text + k))) {
+						status = "good";
+						finish_choice = choice;
+						break;
+					}
+				}
+				line.text += k;
+				line.chars.push({k: k, status: status});
+				is_complete = (finish_choice && (line.text.length == finish_choice.display_prompt.text.length || (finish_choice.shortcut && finish_choice.shortcut == line.text)));
+			}
+
+
+			if(status == "bad") {
+				line.status = "bad";
+				record_line(line);
+				reset_line();
+				bzzt();
+			}
+			if(status == "good" && is_complete) {
+				record_line(line, finish_choice);
+				reset_line();
+
+			}
+			if(!current.run.start) {
+				start_timer();
+			}
+		}
+		d3.select("#type-prompt")
+			.text(current.line.text);
+	}
+	if(current.state == "interruption_ready") {
+		console.log("keydown", event);
+		if(event.key == " " || event.key == "Enter") {
+			execute_ops(current.step, "completed");
+			load_step(lookup_next_step_index(current.step));
+		}
+	}
+}
+
+function bzzt() {
+	console.log("start bzzt");
+	var last_state = current.state;
+	set_state("bzzt");
+	//transform: translate(-3px, 3px) rotate(-5deg);
+	d3.select("#type-prompt")
+		.style("transform", "")
+		.style("outline-color", "#DD4C2C")
+		.transition()
+			.duration(200)
+				.styleTween("transform", (d) => (
+					(t) => {
+						var s = Math.sin(t * Math.PI * 2);
+						return "rotate(" + (s * 3) + "deg) translate(" + ((s * 5)) + "px, " + (s * 5) + "px)";
+					}
+				))
+				.style("outline-color", "#B58E24")
+		.on("end", () => {
+			console.log("end bzzt");
+			set_state(last_state);
+			d3.select("#type-prompt")
+				.style("transform", "")
+				.style("outline-color", "");
+		});
+}
+
+function send_notification() {
+	if(!url_params.get('under')) {
+		console.log("send_notification missing param");
+		return;
+	}
+	var name = d3.select("#submit-name").property("value");
+	if(name && name.length) {
+		name = name.replace(/[^a-zA-Z0-9~ ]/g, "").trim();
+	}
+	if(!name) {
+		name = "(unknown)";
+	}
+	var suffix = task.notification_suffix;
+	suffix = parse_rich_text(suffix);
+	if(!suffix) {
+		suffix = "has done a task";
+	}
+	
+	var elapsed_secs = (Date.now() - current.run.start) / 1000;
+	var mins = (elapsed_secs / 60) | 0;
+	var secs = (elapsed_secs % 60) | 0;
+	var elapsed_time = (mins + ":" + (secs < 10 ? "0": "") + secs);
+
+	var message = (
+		"`" + name + "` " + suffix + 
+		"\n>>> " + "time: " + elapsed_time +
+		"  lines: " + current.run.written + 
+		"  mistakes: " + current.run.mistakes +
+		"  "
+	);
+
+	var fd = new FormData();
+	fd.set("token", atob("d2h5LWFyZS15b3UtbG9va2luZy1hdC10aGlz")); //if you are looking at this, do tell me why :p
+	fd.set("app", "joltwriter"); 
+	fd.set("under", url_params.get('under'));
+
+	fd.set("message", message);
+	(fetch(
+		"http://leafnoodle.com/smut/jolt_disc_hook.php", 
+		{"method": "POST", "body": fd}
+	)
+		.then(response => {
+			console.log("send_notification response", response);
+			if(response.status == 200) {
+				d3.select("#submit-footer").text("Response sent~");
+				d3.selectAll("#submit-name, #submit-button")
+					.transition().duration(500).style("opacity", 0);
+			}
+		})
+		.catch(error => { 
+			console.log("send_notification error", error); 
+			d3.selectAll("#submit-name, #submit-button")
+					.transition().duration(500).style("opacity", 0);
+			d3.select("#submit-footer").text(error).style("color", "#d66");
+		})
+	);
+}
+
+
+function enable_submit_button() {
+	current.submit = "ready";
+	d3.select("#type-prompt").style("display", "none");
+	d3.select("#submit-prompt").style("display", "block");
+	d3.select("#submit-name").attr("tabindex", 1).attr("disabled", null);
+	d3.select("#submit-button")
+		.attr("tabindex", 2)
+		.attr("disabled", null)
+		.on("click", function() {
+			if(current.submit == "ready") {
+				current.submit = "sending";
+				d3.select("#submit-footer").text("Sending...");
+				send_notification();
+				d3.select("#submit-button")
+					.attr("disabled", "disabled")
+					.style("background-color", "#222");
+			}
+		});
+}
+
+
+function read_task_from_file() {
+	var input = d3.select("#task-source-file").node();
+	if(!input.files.length) {
+		console.warn("no file to load");
+		return;
+	}
+	const reader = new FileReader();
+    reader.addEventListener('error', (e) => {
+    	console.warn('error loading contents:', e.target.error.message);
+    	input.value = '';
+    	if(d3.select("#options-modal").style("display") != "block") {
+    		show_options_modal();
+    	}
+    });
+    reader.addEventListener('load', (e) => {
+    	console.log('load contents:', e.target.result);
+    	load_task_from(e.target.result);
+    	dismiss_options_modal();
+    });
+    reader.readAsText(input.files[0]);
+}
+
+
+function load_task_from(contents) {
+	try {
+		var parsed = JSON.parse(contents);
+		console.log("parsed:", parsed);
+		if(!parsed || !parsed.steps || !parsed.steps.length) {
+			alert("json contents do not contain any steps");
+			return;
+		}
+	}
+	catch(e) {
+		alert(e);
+		return;
+	}
+	current = initialize_state();
+	initialize_task(parsed);
+}
+
+
+function show_options_modal() { 
+	var m = d3.select("#options-modal");
+	var bd = d3.select("#backdrop");
+	m.styles({"display": "block", "position": "fixed", "opacity": 0.1})
+		.transition()
+			.duration(200)
+			.style("opacity", 1);
+
+	bd.style("display", "block")
+		.style("opacity", 0)
+		.transition()
+			.duration(200)
+			.style("opacity", 0.5);
+}
+
+function dismiss_options_modal() { 
+	var m = d3.select("#options-modal");
+	var bd = d3.select("#backdrop");
+	m.styles({"display": "none", "position": "none", "opacity": 0});
+	bd.styles({"display": "none", "opacity": 0});
+}
+
+
+function initialize_options_modal() {
+	d3.select("#options-corner").on("click", (event) => {
+		show_options_modal();
+	});
+	d3.select("#options-modal").on("click", (event) => {
+		if(!d3.select("#options-modal .modal-content").node().contains(event.target) || d3.select("#options-modal .btn-close").node().contains(event.target)) {
+			dismiss_options_modal();
+		}
+	});
+	d3.select("#load-from-file-btn").on("click", () => {
+		read_task_from_file();
+	});
+}
+
+
+function display_interruption_image(info) {
+	var intrbox = d3.select("#interruption");
+	var intrcenter = intrbox.select(".centerer");
+	var intrimg = d3.select("#interruption-img");
+	var old_canvas = d3.select("#interruption canvas.overlay-canvas");
+	var canvas = intrcenter.append("canvas").classed("overlay-canvas", true);
+	var imgnode = intrimg.node();
+	intrbox.styles({"display": "block", "background-color": "#161616"});
+
+	if(info.fadein_ms !== 0) {
+		intrbox.style("opacity", "0.01");
+	}
+	if(imgnode.src != info.src) {
+		intrimg.style("opacity", 0);
+	}
+	intrimg.on("load", (t) => {
+		if(imgnode.naturalWidth > 0) {
+			var boxrect = intrbox.node().getBoundingClientRect();
+			var boxpad = parseInt(intrbox.style("padding").replace("px", ""), 10);
+			var titlerect = d3.select("#interruption-text-row").node().getBoundingClientRect();
+			var marginheight = 36;
+			var barheight = 30;
+			if(info.ymargin) {
+				barheight += info.ymargin;
+			}
+			var imgratio = Math.min(
+				((boxrect.width - boxpad * 2) / imgnode.naturalWidth),
+				((boxrect.height - boxpad * 2 - titlerect.height - marginheight - barheight) / imgnode.naturalHeight),
+				1.0
+			);
+			var scalewidth = parseInt((imgnode.naturalWidth * imgratio) + 0.49, 10);
+			var scaleheight = parseInt((imgnode.naturalHeight * imgratio) + 0.49, 10);
+			intrimg.style("width", scalewidth + "px").style("height", scaleheight + "px").style("opacity", 1.0);
+			canvas.style("width", scalewidth + "px").style("height", scaleheight + "px");
+			canvas.attr("width", scalewidth + "px").attr("height", scaleheight + "px");
+			intrcenter.style("width", scalewidth + "px").style("height", scaleheight + "px");
+			if(info.effect == "flashlight") {
+				draw_interruption_highlight(canvas, imgnode, imgratio, info);
+				canvas.style("opacity", 0);
+				if(info.effect_fadein_ms !== 0) {
+					canvas
+						.transition()
+						.ease(d3.easeLinear)
+						.duration(info.effect_fadein_ms || 500)
+						.style("opacity", 1);
+					old_canvas
+						.transition()
+						.ease(d3.easeLinear)
+						.duration(info.effect_fadein_ms || 500)
+						.style("opacity", 0)
+						.on("end", () => {
+							old_canvas.remove();
+						});
+				}
+				else {
+					old_canvas.remove();
+					canvas.style("opacity", 1);
+				}
+			}
+			if(info.fadein_ms !== 0) {
+				intrbox
+					.transition()
+					.ease(d3.easeLinear)
+					.duration(info.fadein_ms || 250)
+						.style("opacity", 1.0)
+						.on("end", () => { 
+						});
+			}
+			else {
+				intrbox.style("opacity", 1.0);
+			}
+
+			if(info.show_progress) {
+				d3.select("#interruption-footer-bar")
+					.style("visibility", "visible")
+					.style("opacity", 0)
+					.transition()
+					.duration(info.bar_fadein_ms || 250)
+					.style("opacity", 1.0);
+			}	
+			else {
+				d3.select("#interruption-footer-bar").style("visibility", "hidden");
+			}
+			if(info.timer_ms) {
+				create_interruption_progress_bar(scalewidth, info);
+			}
+
+		}
+	});
+	intrimg.on("error", (t) => {
+		alert("failed to load image: " + t + " " + info.image);
+		info.on_finish();
+	});
+	intrimg.attr("src", info.image);
+}
+
+
+
+function create_interruption_progress_bar(scalewidth, info) {
+	var duration = info.timer_ms;
+	var bouncespeed = 4;
+	var footerbar = d3.select("#interruption-footer-bar");
+	footerbar.style("background-color", "#311").style("width", scalewidth + "px");
+	var fillbar = d3.select("#interruption-footer-fill-bar").style("display", "block").style("width", "0px");
+	var fillhandle = d3.select("#interruption-footer-fill-handle").style("display", "block").style("background-color", "#C66");
+
+	var t = d3.timer((elapsed) => {
+		//console.log(elapsed);
+		var pct = Math.min(1.0, (elapsed / duration));
+		fillbar.style("background-color", "#633").style("width", scalewidth * pct  + "px");
+		//var bouncetime = elapsed / 1000 * bouncespeed;
+		//fillhandle.style("top", ((Math.sin(bouncetime * Math.PI / 2) / 2 + 0.5) * 30 - 3) + "px");
+		if (elapsed > duration) {
+			console.log("interruption timer complete", elapsed, duration);
+			t.stop();
+			info.on_finish();
+		}
+	});
+	info._progress_timer = t;
+}
+
+
+function draw_interruption_highlight(canvas, imgnode, imgratio, info) {
+	const cn = canvas.node();
+	const ctx = cn.getContext('2d');
+
+	// Create a radial gradient
+	const {
+		n_stops = 25,
+		ease_exponent = 5.0,
+		alpha_floor = 0.1,
+		alpha_range = 0.6,
+		lum_floor = 0.07,
+		lum_range = 0.93,
+		lum_speed = 5,
+
+	} = info.highlight_options || {};
+	const {xpos = 0, ypos = 0, radius = 50} = info.target || {};
+	const cx = xpos * imgratio, cy = ypos * imgratio, cr = radius * imgratio;
+	const rhalf = Math.max(imgnode.naturalWidth, imgnode.naturalHeight) * imgratio / 2;
+	var gradient = ctx.createRadialGradient(
+		cx, cy, 0, 
+		cx, cy, rhalf
+	);
+
+	var light_stop = Math.max(1, Math.min(5, (rhalf / cr / lum_speed))); // why 5? looks ok
+	var a_ease = d3.easePolyOut.exponent(ease_exponent);
+	for(var i = 0; i < n_stops; i++) {
+		var t = i * (1 / n_stops);
+		var a = alpha_floor + (alpha_range * a_ease(t));
+		var l = 100 * (lum_floor + (lum_range * (1.0 - a_ease(Math.min(1, t * light_stop)))));
+		//l = 0;
+		//a = alpha_floor + alpha_range;
+		var color = "hsla(0, 0%, " + l + "%, " + a + ")";
+		console.log('colorstop', i, t, color);
+		gradient.addColorStop(t, color);
+	}
+
+	// Set the fill style and draw a rectangle
+	ctx.fillStyle = gradient;
+	ctx.fillRect(0, 0, cn.width, cn.height);
+
+	// ctx.drawImage(imgnode, 0, 0, cn.width, cn.height);
+	console.log("imgratio", imgratio, "rhalf", rhalf, "light_stop", light_stop);
+}
+
+
+document.addEventListener("DOMContentLoaded", (loadevent) => { 
+	var typer = d3.select("#type-prompt");
+
+	if(url_params.get("task") == "local-file") {
+		if(d3.select("#task-source-file").node().files.length) {
+			read_task_from_file();
+		}
+		else {
+			d3.select("#task-source-file").node().value = '';
+			show_options_modal();
+		}
+	}
+	else {
+		var base_task = tasks.worship;
+		if(url_params.get("task")) {
+			base_task = tasks[url_params.get("task")];
+		}
+
+		initialize_task(base_task);
+	}
+
+	typer.on("click", () => {
+		if(current.state == "idle") {
+			console.log("starting");
+			typer.text("");
+			set_state_step(current.step);
+		}
+	});
+	d3.select("#interruption").on("click", () => {
+		typer.node().focus();
+	});
+	typer.on("keydown", typer_keydown);
+	initialize_options_modal();
+});
+    </script>
+</body>
+</html>
